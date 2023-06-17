@@ -39,9 +39,35 @@ def todos(args: argparse.Namespace):
             browser_open(['/'.join(['to-do.live.com/tasks', which_tasks])])
 
 
+def azure_dev_ops(args: argparse.Namespace):
+    match args.options:
+        case []:
+            org = choose(['sanjay-idpuganti', '10XD', 'sanjay-collections', 'sanjayidpuganti0904'])
+            args.options.append(org)
+            azure_dev_ops(args)
+        case [org]:
+            project: str = ''
+            match org:
+                case 'sanjay-idpuganti':
+                    project = choose(['courses'])
+                case '10XD':
+                    project = choose(['10X'])
+                case 'sanjay-collections':
+                    project = choose(['collections'])
+                case 'sanjayidpuganti0904':
+                    project = choose([
+                        'plutus-web', 'plutus_mvc', '10X', 'odin', 'odin-api', 'odin-web', 'plutus', 'plutus backend'
+                    ])
+            if project:
+                args.options.append(project)
+                azure_dev_ops(args)
+        case [org, project]:
+            browser_open(['/'.join(['dev.azure.com', org, project])])
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("what", choices=('gh', 'todos'))
+    parser.add_argument("what", choices=('gh', 'todos', 'ado'))
     parser.add_argument("options", nargs=argparse.REMAINDER, default='repos')
     args = parser.parse_args()
 
@@ -50,6 +76,8 @@ def main():
             github(args)
         case 'todos':
             todos(args)
+        case 'ado':
+            azure_dev_ops(args)
 
 
 def choose(choices: list[str]) -> str:
