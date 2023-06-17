@@ -5,10 +5,16 @@ import subprocess
 
 browser = 'firefox'
 github_username = 'IdpugantiSanjay'
+history_file_location = "/home/sanjay/.bash_history"
 
 
 def browser_open(p_args: list[str]):
     subprocess.Popen([browser] + p_args, stdout=subprocess.DEVNULL)
+
+
+def write_to_history(cmd: str) -> None:
+    with open(history_file_location, 'a') as history:
+        history.write(cmd)
 
 
 def github(args: argparse.Namespace):
@@ -19,7 +25,9 @@ def github(args: argparse.Namespace):
             github(args)
         case ['home']:
             browser_open(['github.com'])
+            write_to_history('open gh home')
         case ['profile']:
+            write_to_history('open gh profile')
             browser_open(['/'.join(['github.com', github_username])])
         case ['repos']:
             repos = spin_execute("gh repo list --json  'name' -q '.[].name'", title='Fetching github repos...').split(
@@ -32,6 +40,7 @@ def github(args: argparse.Namespace):
             args.options += [section]
             github(args)
         case ['repos', repo, section]:
+            write_to_history(f'open gh repos {repo} {section}')
             browser_open(['/'.join(['github.com', github_username, repo, '' if section == 'open' else section])])
 
 
@@ -42,6 +51,7 @@ def todos(args: argparse.Namespace):
             args.options += [which_tasks]
             todos(args)
         case [which_tasks]:
+            write_to_history(f'open todos {which_tasks}')
             browser_open(['/'.join(['to-do.live.com/tasks', which_tasks])])
 
 
@@ -68,6 +78,7 @@ def azure_dev_ops(args: argparse.Namespace):
                 args.options.append(project)
                 azure_dev_ops(args)
         case [org, project]:
+            write_to_history(f'open ado {org} {project}')
             browser_open(['/'.join(['dev.azure.com', org, project])])
 
 
@@ -84,8 +95,8 @@ def open_what(args: argparse.Namespace):
             what = choose(['gh', 'todos', 'ado'])
             args.options = [what]
             open_what(args)
-        case [what]:
-            args.options = args.options[1:]
+        case [what, *options]:
+            args.options = options
             match what:
                 case 'gh':
                     github(args)
