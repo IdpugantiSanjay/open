@@ -94,6 +94,10 @@ def azure_dev_ops(args: argparse.Namespace):
             browser_open(['/'.join(['dev.azure.com', org, project])])
 
 
+def calendar(args: argparse.Namespace):
+    browser_open(['calendar.google.com/calendar/u/0/r/agenda'])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("options", nargs=argparse.REMAINDER, default='repos')
@@ -104,7 +108,7 @@ def main():
 def open_what(args: argparse.Namespace):
     match args.options:
         case []:
-            what = choose(['gh', 'todos', 'ado'])
+            what = choose(['gh', 'todos', 'ado', 'calendar'])
             args.options = [what]
             open_what(args)
         case [what, *options]:
@@ -116,6 +120,8 @@ def open_what(args: argparse.Namespace):
                     todos(args)
                 case 'ado':
                     todos(args)
+                case 'calendar':
+                    calendar(args)
 
 
 def choose(choices: list[str]) -> str:
