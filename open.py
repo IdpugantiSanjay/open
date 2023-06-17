@@ -13,16 +13,22 @@ def browser_open(p_args: list[str]):
 
 def github(args: argparse.Namespace):
     match args.options:
+        case []:
+            option = choose(['home', 'profile', 'repos'])
+            args.options.append(option)
+            github(args)
+        case ['home']:
+            browser_open(['github.com'])
+        case ['profile']:
+            browser_open(['/'.join(['github.com', github_username])])
         case ['repos']:
-            gh_process = subprocess.run(["gh repo list --json  'name' -q '.[].name'"], stdout=subprocess.PIPE,
-                                        check=True,
-                                        shell=True)
-            repos = gh_process.stdout.decode('utf-8').strip().split('\n')
+            repos = spin_execute("gh repo list --json  'name' -q '.[].name'", title='Fetching github repos...').split(
+                '\n')
             repo = choose(repos)
             args.options += [repo]
             github(args)
         case ['repos', _]:
-            section = choose(['open', 'issues', 'pulls', 'actions'])
+            section = choose(['code', 'issues', 'pulls', 'actions'])
             args.options += [section]
             github(args)
         case ['repos', repo, section]:
@@ -67,17 +73,26 @@ def azure_dev_ops(args: argparse.Namespace):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("what", choices=('gh', 'todos', 'ado'))
     parser.add_argument("options", nargs=argparse.REMAINDER, default='repos')
     args = parser.parse_args()
+    open_what(args)
 
-    match args.what:
-        case 'gh' | 'github':
-            github(args)
-        case 'todos':
-            todos(args)
-        case 'ado':
-            azure_dev_ops(args)
+
+def open_what(args: argparse.Namespace):
+    match args.options:
+        case []:
+            what = choose(['gh', 'todos', 'ado'])
+            args.options = [what]
+            open_what(args)
+        case [what]:
+            args.options = args.options[1:]
+            match what:
+                case 'gh':
+                    github(args)
+                case 'todos':
+                    todos(args)
+                case 'ado':
+                    todos(args)
 
 
 def choose(choices: list[str]) -> str:
@@ -87,6 +102,19 @@ def choose(choices: list[str]) -> str:
     :return: executed process
     """
     process = subprocess.run(["gum", "choose"] + list(choices), stdout=subprocess.PIPE)
+    return process.stdout.decode("utf-8").strip()
+
+
+def spin_execute(command: str, title: str) -> str:
+    """
+    Run gum spinner until an arbitrary command completed execution
+    :param command: {rss} read-later ls
+    :param title: The title user seen when the spinner spins
+    :return: executed process
+    """
+    process = subprocess.run([
+        f"gum spin --spinner minidot --title '{title}'  --show-output -- {command}"
+    ], stdout=subprocess.PIPE, check=True, shell=True)
     return process.stdout.decode("utf-8").strip()
 
 
