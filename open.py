@@ -14,7 +14,7 @@ def browser_open(p_args: list[str]):
 
 def write_to_history(cmd: str) -> None:
     with open(history_file_location, 'a') as history:
-        history.write(cmd)
+        history.write(cmd + '\n')
 
 
 def github(args: argparse.Namespace):
@@ -41,7 +41,7 @@ def github(args: argparse.Namespace):
             github(args)
         case ['repos', repo, section]:
             write_to_history(f'open gh repos {repo} {section}')
-            browser_open(['/'.join(['github.com', github_username, repo, '' if section == 'open' else section])])
+            browser_open(['/'.join(['github.com', github_username, repo, '' if section == 'code' else section])])
 
 
 def todos(args: argparse.Namespace):
