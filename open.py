@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import subprocess
+import sys
 
 browser = 'firefox'
 github_username = 'IdpugantiSanjay'
@@ -21,6 +23,8 @@ def github(args: argparse.Namespace):
     match args.options:
         case []:
             option = choose(['home', 'profile', 'repos'])
+            if not option:
+                sys.exit(os.EX_NOINPUT)
             args.options.append(option)
             github(args)
         case ['home']:
@@ -33,10 +37,14 @@ def github(args: argparse.Namespace):
             repos = spin_execute("gh repo list --json  'name' -q '.[].name'", title='Fetching github repos...').split(
                 '\n')
             repo = choose(repos)
+            if not repo:
+                sys.exit(os.EX_NOINPUT)
             args.options += [repo]
             github(args)
         case ['repos', _]:
             section = choose(['code', 'issues', 'pulls', 'actions'])
+            if not section:
+                sys.exit(os.EX_NOINPUT)
             args.options += [section]
             github(args)
         case ['repos', repo, section]:
@@ -48,6 +56,8 @@ def todos(args: argparse.Namespace):
     match args.options:
         case []:
             which_tasks = choose(['myday', 'important', 'planned', 'flagged', 'inbox'])
+            if not which_tasks:
+                sys.exit(os.EX_NOINPUT)
             args.options += [which_tasks]
             todos(args)
         case [which_tasks]:
@@ -59,6 +69,8 @@ def azure_dev_ops(args: argparse.Namespace):
     match args.options:
         case []:
             org = choose(['sanjay-idpuganti', '10XD', 'sanjay-collections', 'sanjayidpuganti0904'])
+            if not org:
+                sys.exit(os.EX_NOINPUT)
             args.options.append(org)
             azure_dev_ops(args)
         case [org]:
