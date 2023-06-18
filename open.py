@@ -5,9 +5,19 @@ import os
 import subprocess
 import sys
 
+from enum import Enum
+
 browser = 'firefox'
 github_username = 'IdpugantiSanjay'
 history_file_location = "/home/sanjay/.bash_history"
+
+
+class Programs(Enum):
+    GitHub = 'gh'
+    Todos = 'todos'
+    AzureDevOps = 'ado'
+    Calendar = 'calendar'
+    Youtube = 'youtube'
 
 
 def browser_open(p_args: list[str]):
@@ -98,6 +108,22 @@ def calendar(args: argparse.Namespace):
     browser_open(['calendar.google.com/calendar/u/0/r/agenda'])
 
 
+def youtube(args: argparse.Namespace):
+    match args.options:
+        case ['subs']:
+            write_to_history('open youtube subs')
+            browser_open(['youtube.com/feed/subscriptions'])
+        case ['watch-later']:
+            write_to_history('open youtube watch-later')
+            browser_open(['youtube.com/playlist?list=WL'])
+        case []:
+            section = choose(['subs', 'watch-later'])
+            if not section:
+                sys.exit(os.EX_NOINPUT)
+            args.options.append(section)
+            youtube(args)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("options", nargs=argparse.REMAINDER, default='repos')
@@ -108,20 +134,29 @@ def main():
 def open_what(args: argparse.Namespace):
     match args.options:
         case []:
-            what = choose(['gh', 'todos', 'ado', 'calendar'])
+            to_open = [
+                Programs.GitHub,
+                Programs.Todos,
+                Programs.AzureDevOps,
+                Programs.Calendar,
+                Programs.Youtube
+            ]
+            what = choose([x.value for x in to_open])
             args.options = [what]
             open_what(args)
         case [what, *options]:
             args.options = options
-            match what:
-                case 'gh':
+            match Programs(what):
+                case Programs.GitHub:
                     github(args)
-                case 'todos':
+                case Programs.Todos:
                     todos(args)
-                case 'ado':
-                    todos(args)
-                case 'calendar':
+                case Programs.AzureDevOps:
+                    azure_dev_ops(args)
+                case Programs.Calendar:
                     calendar(args)
+                case Programs.Youtube:
+                    youtube(args)
 
 
 def choose(choices: list[str]) -> str:
