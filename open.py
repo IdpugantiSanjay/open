@@ -18,6 +18,7 @@ class Programs(Enum):
     AzureDevOps = 'ado'
     Calendar = 'calendar'
     Youtube = 'youtube'
+    Search = 'search'
 
 
 def browser_open(p_args: list[str]):
@@ -44,7 +45,8 @@ def github(args: argparse.Namespace):
             write_to_history('open gh profile')
             browser_open(['/'.join(['github.com', github_username])])
         case ['repos']:
-            repos = spin_execute("gh repo list --json  'name' -q '.[].name'", title='Fetching github repos...').split(
+            repos = spin_execute("gh repo list --json  'name' -q '.[].name'",
+                                 title='Fetching github repos...').split(
                 '\n')
             repo = choose(repos)
             if not repo:
@@ -59,7 +61,14 @@ def github(args: argparse.Namespace):
             github(args)
         case ['repos', repo, section]:
             write_to_history(f'open gh repos {repo} {section}')
-            browser_open(['/'.join(['github.com', github_username, repo, '' if section == 'code' else section])])
+            browser_open([
+                '/'.join([
+                    'github.com',
+                    github_username,
+                    repo,
+                    '' if section == 'code' else section
+                ])
+            ])
 
 
 def todos(args: argparse.Namespace):
@@ -78,7 +87,12 @@ def todos(args: argparse.Namespace):
 def azure_dev_ops(args: argparse.Namespace):
     match args.options:
         case []:
-            org = choose(['sanjay-idpuganti', '10XD', 'sanjay-collections', 'sanjayidpuganti0904'])
+            org = choose([
+                'sanjay-idpuganti',
+                '10XD',
+                'sanjay-collections',
+                'sanjayidpuganti0904'
+            ])
             if not org:
                 sys.exit(os.EX_NOINPUT)
             args.options.append(org)
@@ -94,7 +108,14 @@ def azure_dev_ops(args: argparse.Namespace):
                     project = choose(['collections'])
                 case 'sanjayidpuganti0904':
                     project = choose([
-                        'plutus-web', 'plutus_mvc', '10X', 'odin', 'odin-api', 'odin-web', 'plutus', 'plutus backend'
+                        'plutus-web',
+                        'plutus_mvc',
+                        '10X',
+                        'odin',
+                        'odin-api',
+                        'odin-web',
+                        'plutus',
+                        'plutus backend'
                     ])
             if project:
                 args.options.append(project)
@@ -124,6 +145,17 @@ def youtube(args: argparse.Namespace):
             youtube(args)
 
 
+def search(args: argparse.Namespace):
+    match args.options:
+        case []:
+            write_to_history('open search')
+            browser_open(['google.com'])
+        case [*query]:
+            query = ' '.join(query)
+            write_to_history(f'open search {query}')
+            browser_open(['/'.join(['google.com', f'search?q={query}'])])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("options", nargs=argparse.REMAINDER, default='repos')
@@ -139,7 +171,8 @@ def open_what(args: argparse.Namespace):
                 Programs.Todos,
                 Programs.AzureDevOps,
                 Programs.Calendar,
-                Programs.Youtube
+                Programs.Youtube,
+                Programs.Search
             ]
             what = choose([x.value for x in to_open])
             args.options = [what]
@@ -157,6 +190,8 @@ def open_what(args: argparse.Namespace):
                     calendar(args)
                 case Programs.Youtube:
                     youtube(args)
+                case Programs.Search:
+                    search(args)
 
 
 def choose(choices: list[str]) -> str:
