@@ -33,7 +33,7 @@ def write_to_history(cmd: str) -> None:
 def github(args: argparse.Namespace):
     match args.options:
         case []:
-            option = choose(['home', 'profile', 'repos'])
+            option = choose(['repos', 'profile', 'home'])
             if not option:
                 sys.exit(os.EX_NOINPUT)
             args.options.append(option)
