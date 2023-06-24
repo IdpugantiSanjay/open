@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
+import itertools
 import os
 import subprocess
 import sys
 
 from enum import Enum
+from typing import Iterable
 
 browser = 'firefox'
 github_username = 'IdpugantiSanjay'
@@ -19,6 +21,7 @@ class Programs(Enum):
     Calendar = 'calendar'
     Youtube = 'youtube'
     Search = 'search'
+    Tmux = 'tmux'
 
 
 def browser_open(p_args: list[str]):
@@ -156,6 +159,57 @@ def search(args: argparse.Namespace):
             browser_open(['/'.join(['google.com', f'search?q={query}'])])
 
 
+def tmux(args: argparse.Namespace):
+    def is_not_colon(c: str) -> bool:
+        return c != ':'
+
+    match args.options:
+        case []:
+            options = ('sessions', 'new-session')
+
+            selected = choose(options)
+            if not selected:
+                sys.exit(os.EX_NOINPUT)
+
+            match selected:
+                case 'new-session':
+                    session_name = gum_input('Session name?')
+                    if not session_name:
+                        sys.exit(os.EX_NOINPUT)
+                    run(['tmux', 'new-session', '-s', session_name, '-d'])
+                case 'sessions':
+                    args.options.append('sessions')
+                    tmux(args)
+
+        case ['sessions']:
+            sessions = run(['tmux', 'list-sessions'])
+            if sessions:
+                sessions = sessions.split('\n')
+            session = choose([''.join(itertools.takewhile(is_not_colon, session)) for session in sorted(sessions)])
+            if not session:
+                sys.exit(os.EX_NOINPUT)
+            args.options.append(session)
+            tmux(args)
+        case ['sessions', _]:
+            session_actions = ("attach", "rename", "kill")
+            action = choose(session_actions)
+            if not action:
+                sys.exit(os.EX_NOINPUT)
+            args.options.append(action)
+            tmux(args)
+        case ['sessions', session, action]:
+            match action:
+                case 'kill':
+                    run(['tmux', 'kill-session', '-t', session])
+                case 'attach':
+                    run(['tmux', 'switch-client', '-t', session])
+                case 'rename':
+                    new_name = gum_input(f'New Session name for {session}')
+                    if not new_name:
+                        sys.exit(os.EX_NOINPUT)
+                    run(['tmux', 'rename-session', '-t', session, new_name])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("options", nargs=argparse.REMAINDER, default='repos')
@@ -172,9 +226,12 @@ def open_what(args: argparse.Namespace):
                 Programs.AzureDevOps,
                 Programs.Calendar,
                 Programs.Youtube,
-                Programs.Search
+                Programs.Search,
+                Programs.Tmux
             ]
             what = choose([x.value for x in to_open])
+            if not what:
+                sys.exit(os.EX_NOINPUT)
             args.options = [what]
             open_what(args)
         case [what, *options]:
@@ -192,15 +249,32 @@ def open_what(args: argparse.Namespace):
                     youtube(args)
                 case Programs.Search:
                     search(args)
+                case Programs.Tmux:
+                    tmux(args)
 
 
-def choose(choices: list[str]) -> str:
+def choose(choices: Iterable[str]) -> str:
     """
     Gum choose any of the given choices interactively
     :param choices: Feed, Read Later, Latest
     :return: executed process
     """
     process = subprocess.run(["gum", "choose"] + list(choices), stdout=subprocess.PIPE)
+    return process.stdout.decode("utf-8").strip()
+
+
+def gum_input(placeholder: str) -> str:
+    """
+    Gum choose any of the given choices interactively
+    :param placeholder: Gum input placeholder text
+    :return: executed process output
+    """
+    process = subprocess.run(["gum", "input"] + ['--placeholder', placeholder], stdout=subprocess.PIPE)
+    return process.stdout.decode("utf-8").strip()
+
+
+def run(cmds: list[str]) -> str:
+    process = subprocess.run(list(cmds), stdout=subprocess.PIPE)
     return process.stdout.decode("utf-8").strip()
 
 
