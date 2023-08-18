@@ -9,6 +9,9 @@ import sys
 from enum import Enum
 from typing import Iterable
 
+from pyfzf.pyfzf import FzfPrompt
+fzf = FzfPrompt().prompt
+
 browser = 'firefox'
 github_username = 'IdpugantiSanjay'
 history_file_location = "/home/sanjay/.bash_history"
@@ -22,6 +25,7 @@ class Programs(Enum):
     Youtube = 'youtube'
     Search = 'search'
     Tmux = 'tmux'
+    Mail = 'mail'
 
 
 def browser_open(p_args: list[str]):
@@ -129,7 +133,11 @@ def azure_dev_ops(args: argparse.Namespace):
 
 
 def calendar(args: argparse.Namespace):
-    browser_open(['calendar.google.com/calendar/u/0/r/agenda'])
+    browser_open(['outlook.live.com/calendar/0/view/month'])
+
+
+def mail(args: argparse.Namespace):
+    browser_open(['https://outlook.live.com/mail/0/'])
 
 
 def youtube(args: argparse.Namespace):
@@ -221,15 +229,9 @@ def open_what(args: argparse.Namespace):
     match args.options:
         case []:
             to_open = [
-                Programs.GitHub,
-                Programs.Todos,
-                Programs.AzureDevOps,
-                Programs.Calendar,
-                Programs.Youtube,
-                Programs.Search,
-                Programs.Tmux
+                x.value for x in Programs
             ]
-            what = choose([x.value for x in to_open])
+            what = choose([x for x in to_open])
             if not what:
                 sys.exit(os.EX_NOINPUT)
             args.options = [what]
@@ -251,21 +253,23 @@ def open_what(args: argparse.Namespace):
                     search(args)
                 case Programs.Tmux:
                     tmux(args)
+                case Programs.Mail:
+                    mail(args)
 
 
 def choose(choices: Iterable[str]) -> str:
     """
-    Gum choose any of the given choices interactively
-    :param choices: Feed, Read Later, Latest
-    :return: executed process
+    fzf choose any of the given choices interactively
+    :param choices: list of strings for the user to choose from
+    :return: selected choice or None if ^C is pressed
     """
-    process = subprocess.run(["gum", "choose"] + list(choices), stdout=subprocess.PIPE)
-    return process.stdout.decode("utf-8").strip()
+    choice = fzf(choices)
+    if choice and len(choice):
+        return choice[0]
 
 
 def gum_input(placeholder: str) -> str:
     """
-    Gum choose any of the given choices interactively
     :param placeholder: Gum input placeholder text
     :return: executed process output
     """
