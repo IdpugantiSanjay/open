@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Iterable
 
 from pyfzf.pyfzf import FzfPrompt
+
 fzf = FzfPrompt().prompt
 
 browser = 'firefox'
@@ -26,6 +27,7 @@ class Programs(Enum):
     Tmux = 'tmux'
     Mail = 'mail'
     News = 'news'
+    ChatGPT = "chat-gpt"
 
 
 sub_programs = {
@@ -34,6 +36,11 @@ sub_programs = {
     Programs.Calendar: ['month', 'week', 'workweek', 'day'],
     Programs.Tmux: ['sessions']
 }
+
+
+# firefox 'ext+container:name=ChatGPT&url=https://chat.openai.com/'
+def firefox_container(url: str, container: str):
+    subprocess.Popen(['firefox', f'ext+container:name={container}&url={url}'])
 
 
 def browser_open(p_args: list[str]):
@@ -295,6 +302,8 @@ def open_what(args: argparse.Namespace):
                     mail(args)
                 case Programs.News:
                     browser_open(["news.ycombinator.com"])
+                case Programs.ChatGPT:
+                    firefox_container('https://chat.openai.com', 'ChatGPT')
 
 
 def choose(choices: Iterable[str]) -> str:
