@@ -5,7 +5,6 @@ import itertools
 import os
 import subprocess
 import sys
-
 from enum import Enum
 from typing import Iterable
 
@@ -26,6 +25,15 @@ class Programs(Enum):
     Search = 'search'
     Tmux = 'tmux'
     Mail = 'mail'
+    News = 'news'
+
+
+sub_programs = {
+    Programs.GitHub: ['home', 'profile', 'repos'],
+    Programs.Todos: ['myday', 'important', 'planned', 'flagged', 'inbox'],
+    Programs.Calendar: ['month', 'week', 'workweek', 'day'],
+    Programs.Tmux: ['sessions']
+}
 
 
 def browser_open(p_args: list[str]):
@@ -133,7 +141,15 @@ def azure_dev_ops(args: argparse.Namespace):
 
 
 def calendar(args: argparse.Namespace):
-    browser_open(['outlook.live.com/calendar/0/view/month'])
+    match args.options:
+        case []:
+            view = choose(['month', 'week', 'workweek', 'day'])
+            if not view:
+                sys.exit(os.EX_NOINPUT)
+            args.options += [view]
+            calendar(args)
+        case [view]:
+            browser_open([f'outlook.live.com/calendar/0/view/{view}'])
 
 
 def mail(args: argparse.Namespace):
@@ -218,10 +234,32 @@ def tmux(args: argparse.Namespace):
                     run(['tmux', 'rename-session', '-t', session, new_name])
 
 
+def generate_available_options() -> list[str]:
+    options = []
+    for x in Programs:
+        options.append(x.value)
+        if x in sub_programs:
+            for sub_program in sub_programs[x]:
+                options.append(f"{x.value} {sub_program}")
+    return options
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("options", nargs=argparse.REMAINDER, default='repos')
+    parser.add_argument("-l", "--list", action='store_true')
+    parser.add_argument("-p", "--prefix")
+    parser.add_argument("options", nargs=argparse.REMAINDER)
     args = parser.parse_args()
+
+    def starts_with_prefix(option: str) -> bool:
+        if args.prefix and args.prefix != 'open':
+            return option.startswith(args.prefix)
+        return True
+
+    if args.list:
+        print("\n".join(sorted(filter(starts_with_prefix, generate_available_options()))))
+        return
+
     open_what(args)
 
 
@@ -255,6 +293,8 @@ def open_what(args: argparse.Namespace):
                     tmux(args)
                 case Programs.Mail:
                     mail(args)
+                case Programs.News:
+                    browser_open(["news.ycombinator.com"])
 
 
 def choose(choices: Iterable[str]) -> str:
