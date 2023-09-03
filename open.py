@@ -28,12 +28,14 @@ class Programs(Enum):
     Mail = 'mail'
     News = 'news'
     ChatGPT = "chat-gpt"
+    GoogleCalendar = "google-calendar"
 
 
 sub_programs = {
     Programs.GitHub: ['home', 'profile', 'repos'],
     Programs.Todos: ['myday', 'important', 'planned', 'flagged', 'inbox'],
     Programs.Calendar: ['month', 'week', 'workweek', 'day'],
+    Programs.GoogleCalendar: ['agenda', 'day', 'week', 'month', 'year'],
     Programs.Tmux: ['sessions']
 }
 
@@ -157,6 +159,18 @@ def calendar(args: argparse.Namespace):
             calendar(args)
         case [view]:
             browser_open([f'outlook.live.com/calendar/0/view/{view}'])
+
+
+def google_calendar(args: argparse.Namespace):
+    match args.options:
+        case []:
+            view = choose(['agenda', 'day', 'week', 'month', 'year'])
+            if not view:
+                sys.exit(os.EX_NOINPUT)
+            args.options += [view]
+            google_calendar(args)
+        case [view]:
+            browser_open([f'https://calendar.google.com/calendar/u/0/r/{view}'])
 
 
 def mail(args: argparse.Namespace):
@@ -304,6 +318,8 @@ def open_what(args: argparse.Namespace):
                     browser_open(["news.ycombinator.com"])
                 case Programs.ChatGPT:
                     firefox_container('https://chat.openai.com', 'ChatGPT')
+                case Programs.GoogleCalendar:
+                    google_calendar(args)
 
 
 def choose(choices: Iterable[str]) -> str:
