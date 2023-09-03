@@ -10,15 +10,25 @@
 #  COMPREPLY=($(compgen -W "$(open -l)" -- "${COMP_WORDS[1]}"))
 #}
 
+## bash version
+
+#_open_completions() {
+#  COMPREPLY=()
+#  word_count=${#COMP_WORDS[@]}
+#  options="$(open -l -p "${COMP_WORDS[-1]}")"
+#  if [ "$word_count" -le 2 ]; then
+#    while IFS= read -r option; do
+#      COMPREPLY+=("$option")
+#    done <<< "$options"
+#  fi
+#}
+
+## python version
 
 _open_completions() {
   COMPREPLY=()
-  word_count=${#COMP_WORDS[@]}
-  options="$(open -l -p "${COMP_WORDS[-1]}")"
-  if [ "$word_count" -le 2 ]; then
-    while IFS= read -r option; do
+  options=$(open -l -p "${COMP_WORDS[@]}")
+  while IFS= read -r option; do
       COMPREPLY+=("$option")
-    done <<< "$options"
-  fi
+  done <<< "$options"
 }
-

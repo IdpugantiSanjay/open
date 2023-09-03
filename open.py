@@ -5,8 +5,9 @@ import itertools
 import os
 import subprocess
 import sys
+from collections.abc import Iterator, Iterable
 from enum import Enum
-from typing import Iterable
+from typing import List
 
 from pyfzf.pyfzf import FzfPrompt
 
@@ -31,7 +32,7 @@ class Programs(Enum):
     GoogleCalendar = "google-calendar"
 
 
-sub_programs = {
+graph = {
     Programs.GitHub: ['home', 'profile', 'repos'],
     Programs.Todos: ['myday', 'important', 'planned', 'flagged', 'inbox'],
     Programs.Calendar: ['month', 'week', 'workweek', 'day'],
@@ -159,6 +160,7 @@ def calendar(args: argparse.Namespace):
             calendar(args)
         case [view]:
             browser_open([f'outlook.live.com/calendar/0/view/{view}'])
+            write_to_history(f"open {Programs.Calendar.value} {view}")
 
 
 def google_calendar(args: argparse.Namespace):
@@ -171,6 +173,7 @@ def google_calendar(args: argparse.Namespace):
             google_calendar(args)
         case [view]:
             browser_open([f'https://calendar.google.com/calendar/u/0/r/{view}'])
+            write_to_history(f"open {Programs.GoogleCalendar.value} {view}")
 
 
 def mail(args: argparse.Namespace):
@@ -255,14 +258,40 @@ def tmux(args: argparse.Namespace):
                     run(['tmux', 'rename-session', '-t', session, new_name])
 
 
-def generate_available_options() -> list[str]:
-    options = []
+def generate_options(comp_words: List[str]) -> Iterator[str]:
+    if len(comp_words) == 1:
+        program = comp_words[0] in Programs.__members__.values() and Programs(comp_words[0])
+        if program:
+            for option in graph[program]:
+                yield option
+            return
+
+    if len(comp_words) == 2:
+        program = comp_words[0] in Programs.__members__.values() and Programs(comp_words[0])
+        if program:
+            for option in graph[program]:
+                if option.startswith(comp_words[1]):
+                    yield option
+            return
+
+    if len(comp_words) > 2:
+        return
+
     for x in Programs:
-        options.append(x.value)
-        if x in sub_programs:
-            for sub_program in sub_programs[x]:
-                options.append(f"{x.value} {sub_program}")
-    return options
+        value = x.value
+        if len(comp_words) > 0:
+            if comp_words[0] in value:
+                yield value
+        else:
+            yield value
+        if x in graph:
+            for sub_program in graph[x]:
+                value = f"{x.value} {sub_program}"
+                if len(comp_words) > 0:
+                    if comp_words[0] in value:
+                        yield value
+                else:
+                    yield value
 
 
 def main():
@@ -272,13 +301,9 @@ def main():
     parser.add_argument("options", nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
-    def starts_with_prefix(option: str) -> bool:
-        if args.prefix and args.prefix != 'open':
-            return option.startswith(args.prefix)
-        return True
-
     if args.list:
-        print("\n".join(sorted(filter(starts_with_prefix, generate_available_options()))))
+        comp_words = [x for x in filter(bool, args.options)]
+        print("\n".join(sorted(generate_options(comp_words))))
         return
 
     open_what(args)
