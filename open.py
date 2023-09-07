@@ -30,6 +30,8 @@ class Programs(Enum):
     News = 'news'
     ChatGPT = "chat-gpt"
     GoogleCalendar = "google-calendar"
+    Rss = "rss"
+    Courses = "courses"
 
 
 graph = {
@@ -39,6 +41,8 @@ graph = {
     Programs.GoogleCalendar: ['agenda', 'day', 'week', 'month', 'year'],
     Programs.Tmux: ['sessions']
 }
+
+GitHubRepoActions = ('code', 'issues', 'pulls', 'actions')
 
 
 # firefox 'ext+container:name=ChatGPT&url=https://chat.openai.com/'
@@ -79,7 +83,7 @@ def github(args: argparse.Namespace):
             args.options += [repo]
             github(args)
         case ['repos', _]:
-            section = choose(['code', 'issues', 'pulls', 'actions'])
+            section = choose(GitHubRepoActions)
             if not section:
                 sys.exit(os.EX_NOINPUT)
             args.options += [section]
@@ -274,6 +278,15 @@ def generate_options(comp_words: List[str]) -> Iterator[str]:
                     yield option
             return
 
+    if comp_words[0] == Programs.GitHub.value:
+        if len(comp_words) == 3:
+            for option in GitHubRepoActions:
+                yield option
+        elif len(comp_words) == 4 and comp_words[-1] not in GitHubRepoActions:
+            for option in GitHubRepoActions:
+                if option.startswith(comp_words[3]):
+                    yield option
+
     if len(comp_words) > 2:
         return
 
@@ -345,6 +358,10 @@ def open_what(args: argparse.Namespace):
                     firefox_container('https://chat.openai.com', 'ChatGPT')
                 case Programs.GoogleCalendar:
                     google_calendar(args)
+                case Programs.Courses:
+                    browser_open(["http://192.168.29.157:5010"])
+                case Programs.Rss:
+                    browser_open(["http://192.168.29.157:5011/feeds"])
 
 
 def choose(choices: Iterable[str]) -> str:
