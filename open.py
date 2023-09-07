@@ -180,7 +180,7 @@ def google_calendar(args: argparse.Namespace):
             write_to_history(f"open {Programs.GoogleCalendar.value} {view}")
 
 
-def mail(args: argparse.Namespace):
+def mail(_: argparse.Namespace):
     browser_open(['https://outlook.live.com/mail/0/'])
 
 
@@ -264,14 +264,16 @@ def tmux(args: argparse.Namespace):
 
 def generate_options(comp_words: List[str]) -> Iterator[str]:
     if len(comp_words) == 1:
-        program = comp_words[0] in Programs.__members__.values() and Programs(comp_words[0])
+        program = (comp_words[0] in Programs.__members__.values()
+                   and Programs(comp_words[0]))
         if program:
             for option in graph[program]:
                 yield option
             return
 
     if len(comp_words) == 2:
-        program = comp_words[0] in Programs.__members__.values() and Programs(comp_words[0])
+        program = (comp_words[0] in Programs.__members__.values()
+                   and Programs(comp_words[0]))
         if program:
             for option in graph[program]:
                 if option.startswith(comp_words[1]):
