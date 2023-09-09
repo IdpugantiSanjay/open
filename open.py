@@ -32,6 +32,7 @@ class Programs(Enum):
     GoogleCalendar = "google-calendar"
     Rss = "rss"
     Courses = "courses"
+    Kibana = "kibana"
 
 
 graph = {
@@ -43,6 +44,7 @@ graph = {
 }
 
 GitHubRepoActions = ('code', 'issues', 'pulls', 'actions')
+SubCommands = {x.value for x in Programs.__members__.values()}
 
 
 # firefox 'ext+container:name=ChatGPT&url=https://chat.openai.com/'
@@ -264,23 +266,24 @@ def tmux(args: argparse.Namespace):
 
 def generate_options(comp_words: List[str]) -> Iterator[str]:
     if len(comp_words) == 1:
-        program = (comp_words[0] in Programs.__members__.values()
-                   and Programs(comp_words[0]))
+        program: Programs = comp_words[0] in SubCommands and Programs(comp_words[0])
         if program:
+            if program not in graph:
+                return
             for option in graph[program]:
                 yield option
             return
 
     if len(comp_words) == 2:
-        program = (comp_words[0] in Programs.__members__.values()
-                   and Programs(comp_words[0]))
-        if program:
-            for option in graph[program]:
-                if option.startswith(comp_words[1]):
-                    yield option
+        program = (comp_words[0] in SubCommands and Programs(comp_words[0]))
+        if program and program in graph:
+            if comp_words[1] not in graph[program]:
+                for option in graph[program]:
+                    if option.startswith(comp_words[1]):
+                        yield option
             return
 
-    if comp_words[0] == Programs.GitHub.value:
+    if len(comp_words) > 0 and comp_words[0] == Programs.GitHub.value:
         if len(comp_words) == 3:
             for option in GitHubRepoActions:
                 yield option
@@ -288,6 +291,7 @@ def generate_options(comp_words: List[str]) -> Iterator[str]:
             for option in GitHubRepoActions:
                 if option.startswith(comp_words[3]):
                     yield option
+        return
 
     if len(comp_words) > 2:
         return
@@ -364,6 +368,8 @@ def open_what(args: argparse.Namespace):
                     browser_open(["http://192.168.29.157:5010"])
                 case Programs.Rss:
                     browser_open(["http://192.168.29.157:5011/feeds"])
+                case Programs.Kibana:
+                    browser_open(["http://192.168.29.157:5601"])
 
 
 def choose(choices: Iterable[str]) -> str:
