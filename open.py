@@ -410,5 +410,6 @@ def spin_execute(command: str, title: str) -> str:
     return process.stdout.decode("utf-8").strip()
 
 
-if __name__ == "open" or 'open.py':
-    main()
+if __name__ == 'open' or 'open.py':
+    if "pytest" not in sys.modules:
+        main()
