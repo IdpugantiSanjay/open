@@ -33,6 +33,7 @@ class Programs(Enum):
     Rss = "rss"
     Courses = "courses"
     Kibana = "kibana"
+    Azure = "azure"
 
 
 graph = {
@@ -370,6 +371,8 @@ def open_what(args: argparse.Namespace):
                     browser_open(["http://192.168.29.157:5011/feeds"])
                 case Programs.Kibana:
                     browser_open(["http://192.168.29.157:5601"])
+                case Programs.Azure:
+                    firefox_container('portal.azure.com', 'Azure')
 
 
 def choose(choices: Iterable[str]) -> str:
