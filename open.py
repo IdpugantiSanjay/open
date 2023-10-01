@@ -34,6 +34,8 @@ class Programs(Enum):
     Courses = "courses"
     Kibana = "kibana"
     Azure = "azure"
+    FastMail = "fastmail"
+    Bard = "bard"
 
 
 graph = {
@@ -373,6 +375,10 @@ def open_what(args: argparse.Namespace):
                     browser_open(["http://192.168.29.157:5601"])
                 case Programs.Azure:
                     firefox_container('portal.azure.com', 'Azure')
+                case Programs.FastMail:
+                    browser_open(["app.fastmail.com/mail/Inbox/?u=b601406a"])
+                case Programs.Bard:
+                    browser_open(["bard.google.com"])
 
 
 def choose(choices: Iterable[str]) -> str:
