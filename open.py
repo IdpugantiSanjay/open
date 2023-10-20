@@ -36,6 +36,7 @@ class Programs(Enum):
     Azure = "azure"
     FastMail = "fastmail"
     Bard = "bard"
+    CloudflareSpeedTest = "cloudflare-speed-test"
 
 
 graph = {
@@ -379,6 +380,8 @@ def open_what(args: argparse.Namespace):
                     browser_open(["app.fastmail.com/mail/Inbox/?u=b601406a"])
                 case Programs.Bard:
                     browser_open(["bard.google.com"])
+                case Programs.CloudflareSpeedTest:
+                    browser_open(["speed.cloudflare.com/"])
 
 
 def choose(choices: Iterable[str]) -> str:
