@@ -37,6 +37,7 @@ class Programs(Enum):
     FastMail = "fastmail"
     Bard = "bard"
     CloudflareSpeedTest = "cloudflare-speed-test"
+    GitLab = "gl"
 
 
 graph = {
@@ -382,6 +383,8 @@ def open_what(args: argparse.Namespace):
                     browser_open(["bard.google.com"])
                 case Programs.CloudflareSpeedTest:
                     browser_open(["speed.cloudflare.com/"])
+                case Programs.GitLab:
+                    browser_open(['gitlab.com'])
 
 
 def choose(choices: Iterable[str]) -> str:
