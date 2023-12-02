@@ -38,14 +38,18 @@ class Programs(Enum):
     Bard = "bard"
     CloudflareSpeedTest = "cloudflare-speed-test"
     GitLab = "gl"
+    Rider = "rider"
 
+
+rider_projects = {"tasks": "/home/sanjay/Work/RiderProjects/Tasks/Tasks.sln"}
 
 graph = {
     Programs.GitHub: ['home', 'profile', 'repos'],
     Programs.Todos: ['myday', 'important', 'planned', 'flagged', 'inbox'],
     Programs.Calendar: ['month', 'week', 'workweek', 'day'],
     Programs.GoogleCalendar: ['agenda', 'day', 'week', 'month', 'year'],
-    Programs.Tmux: ['sessions']
+    Programs.Tmux: ['sessions'],
+    Programs.Rider: rider_projects.keys()
 }
 
 GitHubRepoActions = ('code', 'issues', 'pulls', 'actions')
@@ -54,7 +58,7 @@ SubCommands = {x.value for x in Programs.__members__.values()}
 
 # firefox 'ext+container:name=ChatGPT&url=https://chat.openai.com/'
 def firefox_container(url: str, container: str):
-    subprocess.Popen(['firefox', f'ext+container:name={container}&url={url}'])
+    subprocess.Popen(['firefox', f'ext+container:name={container}&url={url}'], stdout=subprocess.PIPE)
 
 
 def browser_open(p_args: list[str]):
@@ -64,6 +68,24 @@ def browser_open(p_args: list[str]):
 def write_to_history(cmd: str) -> None:
     with open(history_file_location, 'a') as history:
         history.write(cmd + '\n')
+
+
+def rider(solution_path: str) -> None:
+    rider_path = '/home/sanjay/.local/share/JetBrains/Toolbox/apps/rider/bin/rider.sh'
+    subprocess.Popen([rider_path, solution_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def open_rider_projects(args: argparse.Namespace):
+    match args.options:
+        case []:
+            option = choose(rider_projects.keys())
+            if not option:
+                sys.exit(os.EX_NOINPUT)
+            args.options.append(option)
+            open_rider_projects(args)
+        case [project]:
+            if project in rider_projects.keys():
+                rider(rider_projects[project])
 
 
 def github(args: argparse.Namespace):
@@ -385,6 +407,8 @@ def open_what(args: argparse.Namespace):
                     browser_open(["speed.cloudflare.com/"])
                 case Programs.GitLab:
                     browser_open(['gitlab.com'])
+                case Programs.Rider:
+                    open_rider_projects(args)
 
 
 def choose(choices: Iterable[str]) -> str:
