@@ -368,6 +368,9 @@ def open_what(args: argparse.Namespace):
             open_what(args)
         case [what, *options]:
             args.options = options
+            if what not in Programs.__members__:
+                print(f"{what} is not a valid option", file=sys.stderr)
+                sys.exit(1)
             match Programs(what):
                 case Programs.GitHub:
                     github(args)
