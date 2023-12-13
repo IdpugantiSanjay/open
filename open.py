@@ -368,7 +368,7 @@ def open_what(args: argparse.Namespace):
             open_what(args)
         case [what, *options]:
             args.options = options
-            if what not in Programs.__members__:
+            if what not in programs():
                 print(f"{what} is not a valid option", file=sys.stderr)
                 sys.exit(1)
             match Programs(what):
@@ -412,6 +412,10 @@ def open_what(args: argparse.Namespace):
                     browser_open(['gitlab.com'])
                 case Programs.Rider:
                     open_rider_projects(args)
+
+
+def programs():
+    return [x.value for x in Programs.__members__.values()]
 
 
 def choose(choices: Iterable[str]) -> str:
