@@ -53,12 +53,15 @@ graph = {
 }
 
 GitHubRepoActions = ('code', 'issues', 'pulls', 'actions')
+GitLabOptions = ('projects', 'profile', 'todos', 'issues')
 SubCommands = {x.value for x in Programs.__members__.values()}
 
 
 # firefox 'ext+container:name=ChatGPT&url=https://chat.openai.com/'
 def firefox_container(url: str, container: str):
-    subprocess.Popen(['firefox', f'ext+container:name={container}&url={url}'], stdout=subprocess.PIPE)
+    subprocess.Popen(['firefox', 
+                      f'ext+container:name={container}&url={url}'], 
+                      stdout=subprocess.PIPE)
 
 
 def browser_open(p_args: list[str]):
@@ -72,7 +75,9 @@ def write_to_history(cmd: str) -> None:
 
 def rider(solution_path: str) -> None:
     rider_path = '/home/sanjay/.local/share/JetBrains/Toolbox/apps/rider/bin/rider.sh'
-    subprocess.Popen([rider_path, solution_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen([rider_path, solution_path], 
+                     stdout=subprocess.DEVNULL, 
+                     stderr=subprocess.DEVNULL)
 
 
 def open_rider_projects(args: argparse.Namespace):
@@ -289,7 +294,11 @@ def tmux(args: argparse.Namespace):
             sessions = run(['tmux', 'list-sessions'])
             if sessions:
                 sessions = sessions.split('\n')
-            session = choose([''.join(itertools.takewhile(is_not_colon, session)) for session in sorted(sessions)])
+            normalized_sessions = [
+                ''.join(itertools.takewhile(is_not_colon, session)) 
+                for session in sorted(sessions)
+            ]
+            session = choose(normalized_sessions)
             if not session:
                 sys.exit(os.EX_NOINPUT)
             args.options.append(session)
@@ -432,7 +441,7 @@ def open_what(args: argparse.Namespace):
                 case Programs.CloudflareSpeedTest:
                     browser_open(["speed.cloudflare.com/"])
                 case Programs.GitLab:
-                    browser_open(['gitlab.com'])
+                    gitlab(args)
                 case Programs.Rider:
                     open_rider_projects(args)
 
@@ -457,7 +466,8 @@ def gum_input(placeholder: str) -> str:
     :param placeholder: Gum input placeholder text
     :return: executed process output
     """
-    process = subprocess.run(["gum", "input"] + ['--placeholder', placeholder], stdout=subprocess.PIPE)
+    process = subprocess.run(["gum", "input"] + ['--placeholder', placeholder], 
+                             stdout=subprocess.PIPE)
     return process.stdout.decode("utf-8").strip()
 
 
