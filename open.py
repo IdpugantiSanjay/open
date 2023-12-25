@@ -128,6 +128,29 @@ def github(args: argparse.Namespace):
                 ])
             ])
 
+def gitlab(args: argparse.Namespace):
+    gitlab_username = 'leosanchez'
+    match args.options:
+        case []:
+            option = choose(GitLabOptions)
+            if not option:
+                sys.exit(os.EX_NOINPUT)
+            args.options.append(option)
+            gitlab(args)
+        case ['profile']:
+            browser_open(f'gitlab.com/{gitlab_username}')
+        case ['todos']:
+            browser_open('gitlab.com/dashboard/todos')
+        case ['issues']:
+            browser_open('gitlab.com/dashboard/issues?sort=created_date&state=opened&assignee_username%5B%5D=leosanchez')
+        case ['projects']:
+            projects = spin_execute("glab repo list | tail -n +3 | awk '{print $1}'", 
+                                    title='Fetching gitlab projects...').split('\n')
+            project = choose(projects)
+            if not project:
+                sys.exit(os.EX_NOINPUT)
+            browser_open(['/'.join(['gitlab.com', project])])
+
 
 def todos(args: argparse.Namespace):
     match args.options:
