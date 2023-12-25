@@ -1,0 +1,2 @@
+check:
+	ruff check --fix . 
