@@ -40,8 +40,13 @@ class Programs(Enum):
     GitLab = "gl"
     Rider = "rider"
 
+    Code = 'code'
 
 rider_projects = {"tasks": "/home/sanjay/Work/RiderProjects/Tasks/Tasks.sln"}
+code_worspaces = {
+    'plutus-api': "/home/sanjay/Work/gitlab/plutus-app/plutus-api", 
+    'open': '/home/sanjay/PycharmProjects/open'
+}
 
 graph = {
     Programs.GitHub: ['home', 'profile', 'repos'],
@@ -91,6 +96,23 @@ def open_rider_projects(args: argparse.Namespace):
         case [project]:
             if project in rider_projects.keys():
                 rider(rider_projects[project])
+
+
+def open_code(args: argparse.Namespace):
+    match args.options:
+        case []:
+            option = choose(code_worspaces.keys())
+            if not option:
+                sys.exit(os.EX_NOINPUT)
+            args.options.append(option)
+            open_code(args)
+        case [workspace]:
+            if workspace in code_worspaces.keys():
+                subprocess.Popen(['code', code_worspaces[workspace]], 
+                     stdout=subprocess.DEVNULL, 
+                     stderr=subprocess.DEVNULL)
+
+
 
 
 def github(args: argparse.Namespace):
@@ -444,7 +466,8 @@ def open_what(args: argparse.Namespace):
                     gitlab(args)
                 case Programs.Rider:
                     open_rider_projects(args)
-
+                case Programs.Code:
+                    open_code(args)
 
 def programs():
     return [x.value for x in Programs.__members__.values()]
