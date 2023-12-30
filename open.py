@@ -39,7 +39,7 @@ class Programs(Enum):
     CloudflareSpeedTest = "cloudflare-speed-test"
     GitLab = "gl"
     Rider = "rider"
-
+    Tasks = "tasks"
     Code = 'code'
 
 rider_projects = {"tasks": "/home/sanjay/Work/RiderProjects/Tasks/Tasks.sln"}
@@ -468,6 +468,8 @@ def open_what(args: argparse.Namespace):
                     open_rider_projects(args)
                 case Programs.Code:
                     open_code(args)
+                case Programs.Tasks:
+                    browser_open(["calendar.google.com/calendar/u/0/r/tasks"])
 
 def programs():
     return [x.value for x in Programs.__members__.values()]
