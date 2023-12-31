@@ -54,6 +54,7 @@ graph = {
     Programs.Calendar: ['month', 'week', 'workweek', 'day'],
     Programs.GoogleCalendar: ['agenda', 'day', 'week', 'month', 'year'],
     Programs.Tmux: ['sessions'],
+    Programs.GitLab: ['profile', 'todos', 'issues', 'projects'],
     Programs.Rider: rider_projects.keys()
 }
 
