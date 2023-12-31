@@ -406,6 +406,10 @@ def main():
         print("\n".join(sorted(generate_options(comp_words))))
         return
 
+    if os.environ['SHELL'].endswith('fish'):
+        options: List[str] = args.options
+        args.options = list(itertools.chain.from_iterable([x.split(' ') for x in options]))
+
     open_what(args)
 
 
