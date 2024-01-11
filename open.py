@@ -42,14 +42,18 @@ class Programs(Enum):
     Tasks = "tasks"
     Code = 'code'
 
-rider_projects = {"tasks": "/home/sanjay/Work/RiderProjects/Tasks/Tasks.sln"}
+rider_projects = {
+    "tasks": "/home/sanjay/Work/RiderProjects/Tasks/Tasks.sln", 
+    "plutus": "/home/sanjay/Work/gitlab/plutus-app/Plutus/Plutus.sln"
+}
+
 code_worspaces = {
     'plutus-api': "/home/sanjay/Work/gitlab/plutus-app/plutus-api", 
     'open': '/home/sanjay/PycharmProjects/open'
 }
 
 graph = {
-    Programs.GitHub: ['home', 'profile', 'repos'],
+    Programs.GitHub: ['home', 'profile', 'repos', 'stars'],
     Programs.Todos: ['myday', 'important', 'planned', 'flagged', 'inbox'],
     Programs.Calendar: ['month', 'week', 'workweek', 'day'],
     Programs.GoogleCalendar: ['agenda', 'day', 'week', 'month', 'year'],
@@ -119,7 +123,7 @@ def open_code(args: argparse.Namespace):
 def github(args: argparse.Namespace):
     match args.options:
         case []:
-            option = choose(['repos', 'profile', 'home'])
+            option = choose(['repos', 'profile', 'home', 'stars'])
             if not option:
                 sys.exit(os.EX_NOINPUT)
             args.options.append(option)
@@ -128,8 +132,9 @@ def github(args: argparse.Namespace):
             browser_open(['github.com'])
             write_to_history('open gh home')
         case ['profile']:
-            write_to_history('open gh profile')
             browser_open(['/'.join(['github.com', github_username])])
+        case ['stars']:
+            browser_open(['/'.join(['github.com', github_username, '?tab=stars'])])
         case ['repos']:
             repos = spin_execute("gh repo list --json  'name' -q '.[].name'",
                                  title='Fetching github repos...').split(
@@ -409,7 +414,10 @@ def main():
 
     if os.environ['SHELL'].endswith('fish'):
         options: List[str] = args.options
-        args.options = list(itertools.chain.from_iterable([x.split(' ') for x in options]))
+        args.options = list(
+            itertools.chain.from_iterable(
+                [x.split(' ') for x in options]
+            ))
 
     open_what(args)
 
