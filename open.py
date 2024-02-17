@@ -58,12 +58,12 @@ graph = {
     Programs.Calendar: ['month', 'week', 'workweek', 'day'],
     Programs.GoogleCalendar: ['agenda', 'day', 'week', 'month', 'year'],
     Programs.Tmux: ['sessions'],
-    Programs.GitLab: ['profile', 'todos', 'issues', 'projects'],
+    Programs.GitLab: ['groups', 'profile', 'todos', 'issues', 'projects'],
     Programs.Rider: rider_projects.keys()
 }
 
 GitHubRepoActions = ('code', 'issues', 'pulls', 'actions')
-GitLabOptions = ('projects', 'profile', 'todos', 'issues')
+GitLabOptions = graph[Programs.GitLab]
 SubCommands = {x.value for x in Programs.__members__.values()}
 
 
@@ -183,6 +183,12 @@ def gitlab(args: argparse.Namespace):
             if not project:
                 sys.exit(os.EX_NOINPUT)
             browser_open(['/'.join(['gitlab.com', project])])
+        case ['groups']:
+            groups = spin_execute('glab api /groups | jq -r ".[].full_path"', title='Fetching gitlab groups...').split('\n')
+            group = choose(groups)
+            if not group:
+                sys.exit(os.EX_NOINPUT)
+            browser_open(['/'.join(['gitlab.com', group])])
 
 
 def todos(args: argparse.Namespace):
